@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>HTML5 Pushdown Banner: 970x66 to 970x418</title>
+<link rel="stylesheet" href="style.css"/>
+<script>EBModulesToLoad = ['EBCMD'];</script>
+<script type="text/javascript" src="http://ds.serving-sys.com/BurstingScript/EBLoader.js"></script>
+<script type="text/javascript" src="http://ds.serving-sys.com/BurstingRes/CustomScripts/html5_auto_expand_frequency_capping_v1.js"></script>
+<script type="text/javascript" src="scripts/pushdown_banner.js"></script>
+<script type="text/javascript">
+	var adDiv;
+	var bannerDiv;
+	var expansionDiv;
+	var expandDuration = 500;
+	var collapseDuration = expandDuration;
+	var pushdownSettings = {
+		pushDown: true, 
+		expandDuration: expandDuration || 0, 
+		collapseDuration: collapseDuration || 0 
+	};
+
+	function initEB(){
+		if (!EB.isInitialized()){
+			EB.addEventListener(EBG.EventName.EB_INITIALIZED, startAd);
+		}else{
+			startAd();
+		}
+	}
+	function startAd(){
+		EB.initExpansionParams(0,0,970,418);
+		EB._sendMessage("resizecontainer", pushdownSettings);
+		adDiv = document.getElementById("ad");
+		bannerDiv = document.getElementById("banner");
+		expansionDiv = document.getElementById("expansion");
+		bannerDiv.style.visibility = "visible";
+		setUpAutoExpandFrequencyCapping();
+	}
+	function setUpAutoExpandFrequencyCapping() {
+		var autoExpandSettings = {
+			isEnabled: true,
+			frequency: EB.autoExpandFrequencyCapping.Frequencies.NEVER,
+			expansionsPerPeriod: 0,
+			timeUntilAutoCollapse: 0
+		};
+		var beforeAutoExpandSubscription = new EB.autoExpandFrequencyCapping.EventSubscription({
+			eventName: EB.autoExpandFrequencyCapping.Events.AUTO_EXPAND, 
+			callback: switchToExpandedGraphics, 
+			callbackBinding: this, 
+			timing: EB.autoExpandFrequencyCapping.EventTiming.BEFORE
+		});
+		var afterAutoCollapseSubscription = new EB.autoExpandFrequencyCapping.EventSubscription({
+			eventName: EB.autoExpandFrequencyCapping.Events.AUTO_COLLAPSE, 
+			callback: doCollapseBehavior, 
+			callbackBinding: this, 
+			timing: EB.autoExpandFrequencyCapping.EventTiming.AFTER
+		});
+
+		EB.autoExpandFrequencyCapping.subscribeToEvent(beforeAutoExpandSubscription);
+		EB.autoExpandFrequencyCapping.subscribeToEvent(afterAutoCollapseSubscription);
+		EB.autoExpandFrequencyCapping.initialize(autoExpandSettings);
+	}
+	function expand(){
+		switchToExpandedGraphics();
+		EB.expand();
+	}
+	function switchToExpandedGraphics() {
+		expansionDiv.style.visibility = "visible";
+		removeClass(adDiv, "collapsed");
+		setClass(adDiv, "expanded");
+	}
+	function collapse(){
+		EB.collapse();
+		EB.autoExpandFrequencyCapping.cancelAutoCollapse();
+		doCollapseBehavior();
+	}
+	function doCollapseBehavior() {
+		if (!window.hasOwnProperty("collapseDuration") || collapseDuration <= 0) {
+			switchToCollapsedGraphics();
+		}
+		else {
+			setTimeout(switchToCollapsedGraphics, collapseDuration + 100);
+		}
+	}
+	function switchToCollapsedGraphics() {
+		expansionDiv.style.visibility = "hidden";
+		removeClass(adDiv, "expanded");
+		setClass(adDiv, "collapsed");
+	}
+	function handleExpandButtonClick() {
+		expand();
+	}
+	function handleCloseButtonClick() {
+		collapse();
+	}
+	function handleClickthroughButtonClick() {
+		EB.clickthrough();
+	}
+	function handleUserActionButtonClick() {
+		EB.userActionCounter("CustomInteraction");
+	}
+
+</script>
+</head>
+<body onload="initEB();">
+<div id="container">
+  <div id="ad" class="collapsed">
+    <div id="banner">
+      <div class="label"><strong>HTML5 Pushdown Banner:</strong> 970x66</div>
+      <div class="buttons">
+        <button id="expandButton" class="button expand" onclick="javascript:handleExpandButtonClick();">Expand</button>
+      </div>
+    </div>
+    <div id="expansion">
+      <button id="closeButton" class="button close" onclick="javascript:handleCloseButtonClick();">Close</button>
+      <div class="label"><strong>HTML5 Pushdown Banner:</strong> 970x418</div>
+      <div class="buttons">
+        <button id="userActionButton" class="button useraction" onclick="javascript:handleUserActionButtonClick();">UserAction</button>
+        <button id="clickthroughButton" class="button clickthrough" onclick="javascript:handleClickthroughButtonClick();">ClickThrough</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
